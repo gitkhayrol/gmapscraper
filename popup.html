@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GMapScraper Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --card: #16161f;
+      --border: #2a2a3a;
+      --accent: #00e5ff;
+      --accent2: #7c3aed;
+      --accent3: #10b981;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --text: #e8e8f0;
+      --muted: #6b7280;
+      --glow: 0 0 20px rgba(0,229,255,0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 420px;
+      min-height: 580px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* HEADER */
+    .header {
+      background: linear-gradient(135deg, #0d0d1a 0%, #12121e 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px 12px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -40px; left: -40px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(0,229,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -30px; right: -20px;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(124,58,237,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(0,229,255,0.3);
+    }
+    .logo-text {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, var(--accent), #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .logo-badge {
+      margin-left: auto;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'Space Mono', monospace;
+    }
+    .header-sub {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+      letter-spacing: 0.5px;
+    }
+
+    /* TABS */
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1;
+      padding: 9px 0;
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      text-transform: uppercase;
+    }
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .tab:hover:not(.active) { color: var(--text); }
+
+    /* PANELS */
+    .panel { display: none; padding: 16px; }
+    .panel.active { display: block; }
+
+    /* SECTION LABEL */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* FIELD */
+    .field { margin-bottom: 12px; }
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 11px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-family: 'Syne', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(0,229,255,0.08);
+    }
+    .field select option { background: var(--card); }
+
+    /* CATEGORY GRID */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .cat-grid::-webkit-scrollbar { width: 3px; }
+    .cat-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .cat-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 4px;
+      border-radius: 7px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.18s;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      letter-spacing: 0.2px;
+    }
+    .cat-btn .emoji { font-size: 16px; }
+    .cat-btn:hover { border-color: var(--accent); color: var(--text); }
+    .cat-btn.selected {
+      background: rgba(0,229,255,0.08);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* RANGE SLIDER */
+    .range-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .range-row input[type=range] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      border: none;
+      padding: 0;
+    }
+    .range-row input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 0 6px rgba(0,229,255,0.5);
+    }
+    .range-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      min-width: 48px;
+      text-align: right;
+    }
+
+    /* BUTTONS */
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,229,255,0.2);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,229,255,0.3); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger {
+      background: rgba(239,68,68,0.1);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent3), #0d9488);
+      color: #fff;
+    }
+    .btn-sm {
+      padding: 7px 12px;
+      font-size: 11px;
+      width: auto;
+    }
+
+    /* STATUS BAR */
+    .status-bar {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .status-dot.running { background: var(--accent3); animation: pulse 1.2s infinite; }
+    .status-dot.error { background: var(--danger); }
+    .status-dot.done { background: var(--accent); }
+    @keyframes pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+    .status-text { font-size: 11px; color: var(--muted); flex: 1; font-family: 'Space Mono', monospace; }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
+      margin-bottom: 14px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+    .stat-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+    .stat-label { font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+    /* RESULTS TABLE */
+    .results-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .results-wrap::-webkit-scrollbar { width: 4px; }
+    .results-wrap::-webkit-scrollbar-track { background: var(--card); }
+    .results-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    table { width: 100%; border-collapse: collapse; font-size: 10px; }
+    thead { position: sticky; top: 0; background: #1a1a26; }
+    th {
+      padding: 7px 8px;
+      text-align: left;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: 'Space Mono', monospace;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 6px 8px;
+      border-bottom: 1px solid rgba(42,42,58,0.5);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 120px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(0,229,255,0.03); }
+
+    /* EXPORT OPTIONS */
+    .export-grid {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 6px;
+      margin-bottom: 12px;
+    }
+    .export-opt {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .export-opt .fmt-icon { font-size: 18px; display: block; margin-bottom: 3px; }
+    .export-opt:hover { border-color: var(--accent3); color: var(--accent3); }
+    .export-opt.selected { border-color: var(--accent3); color: var(--accent3); background: rgba(16,185,129,0.07); }
+
+    /* FIELDS CHECKLIST */
+    .fields-check {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+      margin-bottom: 12px;
+    }
+    .check-item {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 9px;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--muted);
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .check-item input[type=checkbox] { accent-color: var(--accent); }
+    .check-item:hover { border-color: var(--accent); color: var(--text); }
+    .check-item.checked { border-color: rgba(0,229,255,0.4); color: var(--text); background: rgba(0,229,255,0.04); }
+
+    /* DIVIDER */
+    .divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+    /* PROGRESS BAR */
+    .progress-wrap {
+      background: var(--border);
+      border-radius: 4px;
+      height: 5px;
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      border-radius: 4px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    /* FOOTER */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 10px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--surface);
+    }
+    .footer-brand {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: 'Space Mono', monospace;
+    }
+    .footer-brand span { color: var(--accent); }
+    .footer-links { display: flex; gap: 8px; }
+    .footer-link {
+      font-size: 9px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 3px 7px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      transition: all 0.15s;
+      font-family: 'Space Mono', monospace;
+    }
+    .footer-link:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ALERT */
+    .alert {
+      padding: 9px 12px;
+      border-radius: 7px;
+      font-size: 11px;
+      margin-bottom: 10px;
+      display: flex; align-items: flex-start; gap: 8px;
+      border-left: 3px solid;
+    }
+    .alert-info { background: rgba(0,229,255,0.06); border-color: var(--accent); color: #a0f4ff; }
+    .alert-warn { background: rgba(245,158,11,0.07); border-color: var(--warn); color: #fcd34d; }
+
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row .btn { flex: 1; }
+
+    /* MAPS OPEN BTN */
+    .open-maps-btn {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: #fff;
+      border: none;
+      padding: 11px;
+      border-radius: 8px;
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(26,115,232,0.3);
+    }
+    .open-maps-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,115,232,0.4); }
+
+    /* SCROLL AREA */
+    .scroll-area { max-height: 380px; overflow-y: auto; padding-right: 2px; }
+    .scroll-area::-webkit-scrollbar { width: 3px; }
+    .scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 30px 16px;
+      color: var(--muted);
+    }
+    .empty-state .big-emoji { font-size: 36px; margin-bottom: 10px; }
+    .empty-state p { font-size: 12px; line-height: 1.6; }
+
+    .tag {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      font-family: 'Space Mono', monospace;
+    }
+    .tag-cyan { background: rgba(0,229,255,0.1); color: var(--accent); }
+    .tag-purple { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-row">
+    <div class="logo-icon">🗺️</div>
+    <div class="logo-text">GMapScraper Pro</div>
+    <div class="logo-badge">v1.1</div>
+  </div>
+  <div class="header-sub">Google Maps Business Intelligence Tool</div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" data-tab="scrape">⚡ Scrape</div>
+  <div class="tab" data-tab="results">📊 Results</div>
+  <div class="tab" data-tab="export">💾 Export</div>
+  <div class="tab" data-tab="settings">⚙️ Config</div>
+</div>
+
+<!-- ===== SCRAPE PANEL ===== -->
+<div class="panel active scroll-area" id="tab-scrape">
+
+  <button class="open-maps-btn" id="openMapsBtn">
+    🗺️ Open Google Maps
+  </button>
+
+  <div class="section-label">Business Category</div>
+  <div class="field" style="margin-bottom:8px;">
+    <input type="text" id="catSearch" placeholder="🔍 Search categories..." style="font-size:11px;padding:7px 10px;">
+  </div>
+  <div class="cat-grid" id="catGrid" style="max-height:220px;overflow-y:auto;padding-right:2px;">
+    <!-- ── Food & Drink ── -->
+    <div class="cat-btn selected" data-cat="restaurant"><span class="emoji">🍽️</span>Restaurant</div>
+    <div class="cat-btn" data-cat="cafe"><span class="emoji">☕</span>Cafe</div>
+    <div class="cat-btn" data-cat="bar"><span class="emoji">🍺</span>Bar</div>
+    <div class="cat-btn" data-cat="bakery"><span class="emoji">🥐</span>Bakery</div>
+    <div class="cat-btn" data-cat="fast food"><span class="emoji">🍔</span>Fast Food</div>
+    <div class="cat-btn" data-cat="pizza restaurant"><span class="emoji">🍕</span>Pizza</div>
+    <div class="cat-btn" data-cat="sushi restaurant"><span class="emoji">🍣</span>Sushi</div>
+    <div class="cat-btn" data-cat="seafood restaurant"><span class="emoji">🦞</span>Seafood</div>
+    <div class="cat-btn" data-cat="ice cream shop"><span class="emoji">🍦</span>Ice Cream</div>
+    <div class="cat-btn" data-cat="vegetarian restaurant"><span class="emoji">🥗</span>Vegetarian</div>
+    <div class="cat-btn" data-cat="food court"><span class="emoji">🍱</span>Food Court</div>
+    <div class="cat-btn" data-cat="buffet restaurant"><span class="emoji">🍜</span>Buffet</div>
+    <div class="cat-btn" data-cat="juice bar"><span class="emoji">🧃</span>Juice Bar</div>
+    <div class="cat-btn" data-cat="tea shop"><span class="emoji">🍵</span>Tea Shop</div>
+    <!-- ── Health & Medical ── -->
+    <div class="cat-btn" data-cat="hospital"><span class="emoji">🏥</span>Hospital</div>
+    <div class="cat-btn" data-cat="pharmacy"><span class="emoji">💊</span>Pharmacy</div>
+    <div class="cat-btn" data-cat="dentist"><span class="emoji">🦷</span>Dentist</div>
+    <div class="cat-btn" data-cat="doctor clinic"><span class="emoji">🩺</span>Clinic</div>
+    <div class="cat-btn" data-cat="eye doctor"><span class="emoji">👁️</span>Eye Doctor</div>
+    <div class="cat-btn" data-cat="veterinary clinic"><span class="emoji">🐾</span>Vet</div>
+    <div class="cat-btn" data-cat="physiotherapy"><span class="emoji">🦽</span>Physio</div>
+    <div class="cat-btn" data-cat="pediatrician"><span class="emoji">👶</span>Pediatric</div>
+    <div class="cat-btn" data-cat="dermatologist"><span class="emoji">🧴</span>Skin Doctor</div>
+    <div class="cat-btn" data-cat="medical laboratory"><span class="emoji">🔬</span>Lab</div>
+    <div class="cat-btn" data-cat="psychologist"><span class="emoji">🧠</span>Psychologist</div>
+    <div class="cat-btn" data-cat="nursing home"><span class="emoji">🏠</span>Nursing Home</div>
+    <!-- ── Education ── -->
+    <div class="cat-btn" data-cat="school"><span class="emoji">🏫</span>School</div>
+    <div class="cat-btn" data-cat="university"><span class="emoji">🎓</span>University</div>
+    <div class="cat-btn" data-cat="college"><span class="emoji">🏛️</span>College</div>
+    <div class="cat-btn" data-cat="kindergarten"><span class="emoji">🧒</span>Kindergarten</div>
+    <div class="cat-btn" data-cat="tutoring center"><span class="emoji">📚</span>Tutoring</div>
+    <div class="cat-btn" data-cat="driving school"><span class="emoji">🚗</span>Driving School</div>
+    <div class="cat-btn" data-cat="library"><span class="emoji">📖</span>Library</div>
+    <div class="cat-btn" data-cat="language school"><span class="emoji">🗣️</span>Language</div>
+    <div class="cat-btn" data-cat="training center"><span class="emoji">🎯</span>Training</div>
+    <!-- ── Finance ── -->
+    <div class="cat-btn" data-cat="bank"><span class="emoji">🏦</span>Bank</div>
+    <div class="cat-btn" data-cat="atm"><span class="emoji">💳</span>ATM</div>
+    <div class="cat-btn" data-cat="insurance agency"><span class="emoji">🛡️</span>Insurance</div>
+    <div class="cat-btn" data-cat="accounting firm"><span class="emoji">📊</span>Accounting</div>
+    <div class="cat-btn" data-cat="real estate agency"><span class="emoji">🏠</span>Real Estate</div>
+    <div class="cat-btn" data-cat="financial advisor"><span class="emoji">💹</span>Financial</div>
+    <div class="cat-btn" data-cat="loan agency"><span class="emoji">💰</span>Loans</div>
+    <!-- ── Beauty & Wellness ── -->
+    <div class="cat-btn" data-cat="hair salon"><span class="emoji">💈</span>Salon</div>
+    <div class="cat-btn" data-cat="gym"><span class="emoji">💪</span>Gym</div>
+    <div class="cat-btn" data-cat="spa"><span class="emoji">🧖</span>Spa</div>
+    <div class="cat-btn" data-cat="barbershop"><span class="emoji">✂️</span>Barbershop</div>
+    <div class="cat-btn" data-cat="nail salon"><span class="emoji">💅</span>Nail Salon</div>
+    <div class="cat-btn" data-cat="yoga studio"><span class="emoji">🧘</span>Yoga</div>
+    <div class="cat-btn" data-cat="massage therapy"><span class="emoji">💆</span>Massage</div>
+    <div class="cat-btn" data-cat="tattoo shop"><span class="emoji">🎨</span>Tattoo</div>
+    <div class="cat-btn" data-cat="fitness center"><span class="emoji">🏋️</span>Fitness</div>
+    <!-- ── Retail & Shopping ── -->
+    <div class="cat-btn" data-cat="supermarket"><span class="emoji">🛒</span>Supermarket</div>
+    <div class="cat-btn" data-cat="shopping mall"><span class="emoji">🛍️</span>Mall</div>
+    <div class="cat-btn" data-cat="electronics store"><span class="emoji">📱</span>Electronics</div>
+    <div class="cat-btn" data-cat="clothing store"><span class="emoji">👗</span>Clothing</div>
+    <div class="cat-btn" data-cat="furniture store"><span class="emoji">🛋️</span>Furniture</div>
+    <div class="cat-btn" data-cat="bookstore"><span class="emoji">📚</span>Bookstore</div>
+    <div class="cat-btn" data-cat="jewelry store"><span class="emoji">💍</span>Jewelry</div>
+    <div class="cat-btn" data-cat="hardware store"><span class="emoji">🔧</span>Hardware</div>
+    <div class="cat-btn" data-cat="toy store"><span class="emoji">🧸</span>Toy Store</div>
+    <div class="cat-btn" data-cat="shoe store"><span class="emoji">👟</span>Shoes</div>
+    <div class="cat-btn" data-cat="grocery store"><span class="emoji">🥦</span>Grocery</div>
+    <div class="cat-btn" data-cat="pet store"><span class="emoji">🐶</span>Pet Store</div>
+    <!-- ── Hospitality ── -->
+    <div class="cat-btn" data-cat="hotel"><span class="emoji">🏨</span>Hotel</div>
+    <div class="cat-btn" data-cat="motel"><span class="emoji">🏩</span>Motel</div>
+    <div class="cat-btn" data-cat="resort"><span class="emoji">🏖️</span>Resort</div>
+    <div class="cat-btn" data-cat="hostel"><span class="emoji">🛏️</span>Hostel</div>
+    <div class="cat-btn" data-cat="guest house"><span class="emoji">🏡</span>Guest House</div>
+    <!-- ── Services ── -->
+    <div class="cat-btn" data-cat="laundry"><span class="emoji">👕</span>Laundry</div>
+    <div class="cat-btn" data-cat="car wash"><span class="emoji">🚿</span>Car Wash</div>
+    <div class="cat-btn" data-cat="plumber"><span class="emoji">🔧</span>Plumber</div>
+    <div class="cat-btn" data-cat="electrician"><span class="emoji">⚡</span>Electrician</div>
+    <div class="cat-btn" data-cat="auto repair shop"><span class="emoji">🔩</span>Auto Repair</div>
+    <div class="cat-btn" data-cat="cleaning service"><span class="emoji">🧹</span>Cleaning</div>
+    <div class="cat-btn" data-cat="printing shop"><span class="emoji">🖨️</span>Printing</div>
+    <div class="cat-btn" data-cat="photography studio"><span class="emoji">📷</span>Photography</div>
+    <div class="cat-btn" data-cat="event planning"><span class="emoji">🎪</span>Events</div>
+    <div class="cat-btn" data-cat="security company"><span class="emoji">🔒</span>Security</div>
+    <div class="cat-btn" data-cat="law firm"><span class="emoji">⚖️</span>Law Firm</div>
+    <div class="cat-btn" data-cat="courier service"><span class="emoji">📦</span>Courier</div>
+    <!-- ── Transport ── -->
+    <div class="cat-btn" data-cat="gas station"><span class="emoji">⛽</span>Gas Station</div>
+    <div class="cat-btn" data-cat="parking lot"><span class="emoji">🅿️</span>Parking</div>
+    <div class="cat-btn" data-cat="car rental"><span class="emoji">🚘</span>Car Rental</div>
+    <div class="cat-btn" data-cat="bus station"><span class="emoji">🚌</span>Bus Station</div>
+    <div class="cat-btn" data-cat="taxi stand"><span class="emoji">🚕</span>Taxi</div>
+    <div class="cat-btn" data-cat="car dealership"><span class="emoji">🚗</span>Car Dealer</div>
+    <!-- ── Recreation ── -->
+    <div class="cat-btn" data-cat="park"><span class="emoji">🌳</span>Park</div>
+    <div class="cat-btn" data-cat="cinema"><span class="emoji">🎬</span>Cinema</div>
+    <div class="cat-btn" data-cat="museum"><span class="emoji">🏛️</span>Museum</div>
+    <div class="cat-btn" data-cat="zoo"><span class="emoji">🦁</span>Zoo</div>
+    <div class="cat-btn" data-cat="bowling alley"><span class="emoji">🎳</span>Bowling</div>
+    <div class="cat-btn" data-cat="sports club"><span class="emoji">⚽</span>Sports Club</div>
+    <div class="cat-btn" data-cat="nightclub"><span class="emoji">🎧</span>Nightclub</div>
+    <div class="cat-btn" data-cat="amusement park"><span class="emoji">🎡</span>Amusement</div>
+    <div class="cat-btn" data-cat="swimming pool"><span class="emoji">🏊</span>Pool</div>
+    <!-- ── Religious ── -->
+    <div class="cat-btn" data-cat="mosque"><span class="emoji">🕌</span>Mosque</div>
+    <div class="cat-btn" data-cat="church"><span class="emoji">⛪</span>Church</div>
+    <div class="cat-btn" data-cat="temple"><span class="emoji">🛕</span>Temple</div>
+    <div class="cat-btn" data-cat="synagogue"><span class="emoji">🕍</span>Synagogue</div>
+    <!-- ── Government & Public ── -->
+    <div class="cat-btn" data-cat="police station"><span class="emoji">👮</span>Police</div>
+    <div class="cat-btn" data-cat="fire station"><span class="emoji">🚒</span>Fire Station</div>
+    <div class="cat-btn" data-cat="post office"><span class="emoji">📮</span>Post Office</div>
+    <div class="cat-btn" data-cat="embassy"><span class="emoji">🏛️</span>Embassy</div>
+    <!-- ── Technology ── -->
+    <div class="cat-btn" data-cat="coworking space"><span class="emoji">💻</span>Coworking</div>
+    <div class="cat-btn" data-cat="software company"><span class="emoji">🖥️</span>IT Company</div>
+    <!-- ── Custom ── -->
+    <div class="cat-btn" data-cat="custom"><span class="emoji">✏️</span>Custom</div>
+  </div>
+
+  <div class="field" id="customCatField" style="display:none;">
+    <label>Custom Category / Keyword</label>
+    <input type="text" id="customCat" placeholder="e.g. real estate, dentist...">
+  </div>
+
+  <div class="field">
+    <label>Search Location / Area</label>
+    <input type="text" id="searchLocation" placeholder="e.g. Dhaka, Bangladesh">
+  </div>
+
+  <div class="field">
+    <label>Search Radius</label>
+    <div class="range-row">
+      <input type="range" id="radiusRange" min="1" max="50" value="5" step="1">
+      <span class="range-val" id="radiusVal">5 km</span>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Max Results Limit</label>
+    <select id="maxResults">
+      <option value="20">20 results</option>
+      <option value="50" selected>50 results</option>
+      <option value="100">100 results</option>
+      <option value="200">200 results</option>
+      <option value="500">500 results</option>
+      <option value="0">Unlimited</option>
+    </select>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="status-bar" id="statusBar">
+    <div class="status-dot" id="statusDot"></div>
+    <div class="status-text" id="statusText">Ready to scrape</div>
+    <span class="tag tag-cyan" id="countTag">0</span>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="startBtn">
+      ▶ Start Scraping
+    </button>
+    <button class="btn btn-danger btn-sm" id="stopBtn" style="display:none;">
+      ■ Stop
+    </button>
+  </div>
+</div>
+
+<!-- ===== RESULTS PANEL ===== -->
+<div class="panel" id="tab-results">
+
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card">
+      <div class="stat-num" id="totalCount">0</div>
+      <div class="stat-label">Total</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="withPhoneCount">0</div>
+      <div class="stat-label">W/ Phone</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="withEmailCount">0</div>
+      <div class="stat-label">W/ Email</div>
+    </div>
+  </div>
+
+  <div class="results-wrap" id="resultsWrap">
+    <div class="empty-state">
+      <div class="big-emoji">📭</div>
+      <p>No results yet.<br>Go to Scrape tab and start collecting data.</p>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary btn-sm" id="clearResultsBtn">🗑 Clear All</button>
+    <button class="btn btn-secondary btn-sm" id="refreshResultsBtn">🔄 Refresh</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="btn" id="enrichBtn" style="background:linear-gradient(135deg,#7c3aed,#4c1d95);color:#fff;box-shadow:0 4px 16px rgba(124,58,237,.25);">
+    🔍 Find Emails &amp; Phones from Websites
+  </button>
+
+  <div id="enrichWrap" style="display:none;margin-top:10px;">
+    <div class="progress-wrap" style="margin-bottom:6px;">
+      <div class="progress-bar" id="enrichBar" style="background:linear-gradient(90deg,#7c3aed,#a78bfa);width:0%;"></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div id="enrichStatus" style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;flex:1;"></div>
+      <span class="tag tag-purple" id="enrichCountTag"></span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXPORT PANEL ===== -->
+<div class="panel" id="tab-export">
+
+  <div class="section-label">Export Format</div>
+  <div class="export-grid" id="exportGrid">
+    <div class="export-opt selected" data-fmt="csv">
+      <span class="fmt-icon">📄</span>CSV
+    </div>
+    <div class="export-opt" data-fmt="json">
+      <span class="fmt-icon">{ }</span>JSON
+    </div>
+    <div class="export-opt" data-fmt="excel">
+      <span class="fmt-icon">📊</span>Excel
+    </div>
+    <div class="export-opt" data-fmt="txt">
+      <span class="fmt-icon">📝</span>TXT
+    </div>
+  </div>
+
+  <div class="section-label">Fields to Export</div>
+  <div class="fields-check" id="fieldsCheck">
+    <label class="check-item checked"><input type="checkbox" checked value="name"> Business Name</label>
+    <label class="check-item checked"><input type="checkbox" checked value="category"> Category</label>
+    <label class="check-item checked"><input type="checkbox" checked value="phone"> Phone</label>
+    <label class="check-item checked"><input type="checkbox" checked value="email"> Email</label>
+    <label class="check-item checked"><input type="checkbox" checked value="website"> Website</label>
+    <label class="check-item checked"><input type="checkbox" checked value="address"> Address</label>
+    <label class="check-item checked"><input type="checkbox" checked value="city"> City</label>
+    <label class="check-item checked"><input type="checkbox" checked value="state"> State</label>
+    <label class="check-item checked"><input type="checkbox" checked value="country"> Country</label>
+    <label class="check-item checked"><input type="checkbox" checked value="zip"> ZIP / Postal</label>
+    <label class="check-item checked"><input type="checkbox" checked value="lat"> Latitude</label>
+    <label class="check-item checked"><input type="checkbox" checked value="lng"> Longitude</label>
+    <label class="check-item checked"><input type="checkbox" checked value="rating"> Rating</label>
+    <label class="check-item checked"><input type="checkbox" checked value="reviews"> Reviews #</label>
+    <label class="check-item checked"><input type="checkbox" checked value="hours"> Open Hours</label>
+    <label class="check-item checked"><input type="checkbox" checked value="plus_code"> Plus Code</label>
+    <label class="check-item checked"><input type="checkbox" checked value="scraped_at"> Scraped At</label>
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="btn btn-success" id="exportBtn">
+    ⬇️ Export Data
+  </button>
+
+  <div style="margin-top:8px;">
+    <button class="btn btn-secondary" id="copyClipboardBtn">
+      📋 Copy to Clipboard
+    </button>
+  </div>
+</div>
+
+<!-- ===== SETTINGS PANEL ===== -->
+<div class="panel" id="tab-settings">
+
+  <div class="section-label">Scraping Settings</div>
+
+  <div class="field">
+    <label>Scroll Delay (ms) — slower = more reliable</label>
+    <input type="number" id="scrollDelay" value="600" min="200" max="5000" step="100">
+  </div>
+
+  <div class="field">
+    <label>Click Delay (ms)</label>
+    <input type="number" id="clickDelay" value="350" min="150" max="3000" step="50">
+  </div>
+
+  <div class="field">
+    <label>Auto-scroll Retries</label>
+    <select id="maxRetries">
+      <option value="3">3 retries</option>
+      <option value="5" selected>5 retries</option>
+      <option value="10">10 retries</option>
+    </select>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-label">About / Credits</div>
+
+  <div class="alert alert-info">
+    <span>ℹ️</span>
+    <div>
+      <strong>GMapScraper Pro v1.0</strong><br>
+      Powered by <strong>Khayrol Islam</strong><br>
+      Open-source Google Maps data extraction tool.
+    </div>
+  </div>
+
+  <div class="alert alert-warn">
+    <span>⚠️</span>
+    <div style="font-size:10px;">Use responsibly. Respect Google's Terms of Service. This tool is for educational & research purposes.</div>
+  </div>
+
+  <button class="btn btn-secondary" id="saveSettingsBtn">💾 Save Settings</button>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-brand">Powered by <span>Khayrol Islam</span></div>
+  <div class="footer-links">
+    <a class="footer-link" href="https://github.com/gitkhayrol" target="_blank">GitHub</a>
+    <a class="footer-link" href="https://www.facebook.com/khayrol.islam.35" target="_blank">Facebook</a>
+  </div>
+</div>
+
+<script src="src/popup.js"></script>
+</body>
+</html>

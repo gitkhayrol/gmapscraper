@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"require\\('./server.js'\\)\" --input-type=module)",
+      "Bash(node /home/john/Documents/extaintions/gmapscraper/server/server.js)",
+      "Bash(curl -s http://127.0.0.1:5590/login.html)",
+      "Bash(kill %1)"
+    ]
+  }
+}

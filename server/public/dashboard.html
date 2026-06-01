@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GMapScraper Pro — Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0f;--sur:#111118;--card:#16161f;--bdr:#2a2a3a;--acc:#00e5ff;--pur:#7c3aed;--grn:#10b981;--warn:#f59e0b;--red:#ef4444;--txt:#e8e8f0;--mut:#6b7280}
+body{min-height:100vh;background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;display:flex;flex-direction:column}
+/* NAV */
+nav{background:var(--sur);border-bottom:1px solid var(--bdr);padding:12px 24px;display:flex;align-items:center;gap:16px;flex-shrink:0}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--acc),var(--pur));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 0 12px rgba(0,229,255,.3)}
+.nav-title{font-size:17px;font-weight:800;background:linear-gradient(90deg,var(--acc),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.ext-badge{margin-left:auto;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--mut)}
+.ext-dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+.ext-dot.on{background:var(--grn);box-shadow:0 0 6px var(--grn)}
+.logout-btn{background:none;border:1px solid var(--bdr);color:var(--mut);padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .15s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+/* LAYOUT */
+.main{display:grid;grid-template-columns:320px 1fr;gap:0;flex:1;overflow:hidden}
+/* SIDEBAR */
+.sidebar{background:var(--sur);border-right:1px solid var(--bdr);padding:20px 16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--mut);text-transform:uppercase;margin-bottom:6px}
+.field label{display:block;font-size:11px;color:var(--mut);margin-bottom:5px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;background:var(--card);border:1px solid var(--bdr);color:var(--txt);padding:8px 11px;border-radius:7px;font-size:13px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(0,229,255,.08)}
+.field select option{background:var(--card)}
+.range-row{display:flex;align-items:center;gap:10px}
+.range-row input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:var(--bdr);border-radius:2px;border:none;padding:0}
+.range-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:var(--acc);border-radius:50%;cursor:pointer}
+.range-val{font-size:11px;color:var(--acc);min-width:44px;text-align:right;font-family:monospace}
+.btn{width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-primary{background:linear-gradient(135deg,var(--acc),var(--pur));color:#fff;box-shadow:0 4px 16px rgba(0,229,255,.2)}
+.btn-primary:hover{transform:translateY(-1px);opacity:.9}
+.btn-danger{background:rgba(239,68,68,.12);border:1px solid var(--red);color:var(--red)}
+.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-enrich{background:linear-gradient(135deg,var(--pur),#4c1d95);color:#fff;box-shadow:0 4px 14px rgba(124,58,237,.25)}
+.btn-enrich:hover{opacity:.9}
+.btn-sec{background:var(--card);border:1px solid var(--bdr);color:var(--txt)}
+.btn-sec:hover{border-color:var(--acc);color:var(--acc)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn-row{display:flex;gap:8px}
+.btn-row .btn{flex:1}
+.divider{height:1px;background:var(--bdr)}
+/* STATUS */
+.status-bar{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.sdot{width:8px;height:8px;border-radius:50%;background:var(--mut);flex-shrink:0}
+.sdot.run{background:var(--grn);animation:pulse 1.2s infinite}
+.sdot.done{background:var(--acc)}
+.sdot.err{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.stext{font-size:11px;color:var(--mut);flex:1;font-family:monospace}
+.prog-wrap{background:var(--bdr);border-radius:4px;height:5px;overflow:hidden;margin-top:8px}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--pur),var(--acc));border-radius:4px;transition:width .4s;width:0}
+/* CONTENT */
+.content{display:flex;flex-direction:column;overflow:hidden}
+.content-top{padding:16px 20px 0;flex-shrink:0}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-align:center}
+.stat-num{font-family:monospace;font-size:22px;font-weight:700;color:var(--acc);line-height:1;margin-bottom:3px}
+.stat-label{font-size:9px;color:var(--mut);letter-spacing:1px;text-transform:uppercase}
+/* TABLE */
+.table-wrap{flex:1;overflow:auto;margin:0 20px 16px;border:1px solid var(--bdr);border-radius:8px;background:var(--card)}
+.table-wrap::-webkit-scrollbar{width:6px;height:6px}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:3px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+thead{position:sticky;top:0;background:#1a1a26;z-index:1}
+th{padding:8px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--mut);letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--bdr)}
+td{padding:7px 10px;border-bottom:1px solid rgba(42,42,58,.5);color:var(--txt);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(0,229,255,.03)}
+.empty{text-align:center;padding:60px 20px;color:var(--mut)}
+.empty .bi{font-size:48px;margin-bottom:12px}
+/* EXPORT ROW */
+.export-row{padding:0 20px 16px;display:flex;gap:8px;flex-shrink:0}
+.exp-btn{flex:1;padding:9px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--bdr);background:var(--card);color:var(--mut);transition:all .15s}
+.exp-btn:hover{border-color:var(--grn);color:var(--grn)}
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--bdr);border-radius:10px;padding:12px 18px;font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.ok{border-color:var(--grn);color:var(--grn)}
+.toast.bad{border-color:var(--red);color:#fca5a5}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-icon">🗺️</div>
+    <div class="nav-title">GMapScraper Pro</div>
+    <span style="font-size:10px;color:var(--mut);margin-left:4px;font-family:monospace">PORTAL</span>
+  </div>
+  <div class="ext-badge">
+    <span class="ext-dot" id="extDot"></span>
+    <span id="extLabel">Extension offline</span>
+  </div>
+  <button class="logout-btn" id="logoutBtn">Logout</button>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR / CONTROLS -->
+  <div class="sidebar">
+
+    <!-- Status -->
+    <div>
+      <div class="status-bar">
+        <div class="sdot" id="sDot"></div>
+        <div class="stext" id="sText">Waiting for extension…</div>
+        <span style="font-family:monospace;font-size:12px;color:var(--acc)" id="cTag">0</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Category -->
+    <div>
+      <div class="sec-label">Category</div>
+      <div class="field" style="margin-bottom:6px">
+        <input type="text" id="catSearch" placeholder="🔍 Search…">
+      </div>
+      <div class="field">
+        <select id="catSelect" size="1">
+          <optgroup label="── Food & Drink">
+            <option value="restaurant">🍽️ Restaurant</option>
+            <option value="cafe">☕ Cafe</option>
+            <option value="bar">🍺 Bar</option>
+            <option value="bakery">🥐 Bakery</option>
+            <option value="fast food">🍔 Fast Food</option>
+            <option value="pizza restaurant">🍕 Pizza</option>
+            <option value="sushi restaurant">🍣 Sushi</option>
+            <option value="seafood restaurant">🦞 Seafood</option>
+            <option value="ice cream shop">🍦 Ice Cream</option>
+            <option value="vegetarian restaurant">🥗 Vegetarian</option>
+            <option value="food court">🍱 Food Court</option>
+            <option value="buffet restaurant">🍜 Buffet</option>
+            <option value="juice bar">🧃 Juice Bar</option>
+          </optgroup>
+          <optgroup label="── Health">
+            <option value="hospital">🏥 Hospital</option>
+            <option value="pharmacy">💊 Pharmacy</option>
+            <option value="dentist">🦷 Dentist</option>
+            <option value="doctor clinic">🩺 Clinic</option>
+            <option value="eye doctor">👁️ Eye Doctor</option>
+            <option value="veterinary clinic">🐾 Vet</option>
+            <option value="physiotherapy">🦽 Physio</option>
+            <option value="pediatrician">👶 Pediatric</option>
+            <option value="dermatologist">🧴 Skin Doctor</option>
+            <option value="medical laboratory">🔬 Lab</option>
+            <option value="psychologist">🧠 Psychologist</option>
+          </optgroup>
+          <optgroup label="── Education">
+            <option value="school">🏫 School</option>
+            <option value="university">🎓 University</option>
+            <option value="college">🏛️ College</option>
+            <option value="kindergarten">🧒 Kindergarten</option>
+            <option value="tutoring center">📚 Tutoring</option>
+            <option value="driving school">🚗 Driving School</option>
+            <option value="library">📖 Library</option>
+            <option value="language school">🗣️ Language</option>
+            <option value="training center">🎯 Training</option>
+          </optgroup>
+          <optgroup label="── Finance">
+            <option value="bank">🏦 Bank</option>
+            <option value="atm">💳 ATM</option>
+            <option value="insurance agency">🛡️ Insurance</option>
+            <option value="accounting firm">📊 Accounting</option>
+            <option value="real estate agency">🏠 Real Estate</option>
+            <option value="financial advisor">💹 Financial</option>
+            <option value="loan agency">💰 Loans</option>
+          </optgroup>
+          <optgroup label="── Beauty & Wellness">
+            <option value="hair salon">💈 Salon</option>
+            <option value="gym">💪 Gym</option>
+            <option value="spa">🧖 Spa</option>
+            <option value="barbershop">✂️ Barbershop</option>
+            <option value="nail salon">💅 Nail Salon</option>
+            <option value="yoga studio">🧘 Yoga</option>
+            <option value="massage therapy">💆 Massage</option>
+            <option value="tattoo shop">🎨 Tattoo</option>
+            <option value="fitness center">🏋️ Fitness</option>
+          </optgroup>
+          <optgroup label="── Retail">
+            <option value="supermarket">🛒 Supermarket</option>
+            <option value="shopping mall">🛍️ Mall</option>
+            <option value="electronics store">📱 Electronics</option>
+            <option value="clothing store">👗 Clothing</option>
+            <option value="furniture store">🛋️ Furniture</option>
+            <option value="bookstore">📚 Bookstore</option>
+            <option value="jewelry store">💍 Jewelry</option>
+            <option value="hardware store">🔧 Hardware</option>
+            <option value="toy store">🧸 Toy Store</option>
+            <option value="shoe store">👟 Shoes</option>
+            <option value="grocery store">🥦 Grocery</option>
+            <option value="pet store">🐶 Pet Store</option>
+          </optgroup>
+          <optgroup label="── Hospitality">
+            <option value="hotel">🏨 Hotel</option>
+            <option value="motel">🏩 Motel</option>
+            <option value="resort">🏖️ Resort</option>
+            <option value="hostel">🛏️ Hostel</option>
+            <option value="guest house">🏡 Guest House</option>
+          </optgroup>
+          <optgroup label="── Services">
+            <option value="laundry">👕 Laundry</option>
+            <option value="car wash">🚿 Car Wash</option>
+            <option value="plumber">🔧 Plumber</option>
+            <option value="electrician">⚡ Electrician</option>
+            <option value="auto repair shop">🔩 Auto Repair</option>
+            <option value="cleaning service">🧹 Cleaning</option>
+            <option value="printing shop">🖨️ Printing</option>
+            <option value="photography studio">📷 Photography</option>
+            <option value="event planning">🎪 Events</option>
+            <option value="security company">🔒 Security</option>
+            <option value="law firm">⚖️ Law Firm</option>
+            <option value="courier service">📦 Courier</option>
+          </optgroup>
+          <optgroup label="── Transport">
+            <option value="gas station">⛽ Gas Station</option>
+            <option value="parking lot">🅿️ Parking</option>
+            <option value="car rental">🚘 Car Rental</option>
+            <option value="bus station">🚌 Bus Station</option>
+            <option value="taxi stand">🚕 Taxi</option>
+            <option value="car dealership">🚗 Car Dealer</option>
+          </optgroup>
+          <optgroup label="── Recreation">
+            <option value="park">🌳 Park</option>
+            <option value="cinema">🎬 Cinema</option>
+            <option value="museum">🏛️ Museum</option>
+            <option value="zoo">🦁 Zoo</option>
+            <option value="bowling alley">🎳 Bowling</option>
+            <option value="sports club">⚽ Sports Club</option>
+            <option value="nightclub">🎧 Nightclub</option>
+            <option value="amusement park">🎡 Amusement</option>
+            <option value="swimming pool">🏊 Pool</option>
+          </optgroup>
+          <optgroup label="── Religious">
+            <option value="mosque">🕌 Mosque</option>
+            <option value="church">⛪ Church</option>
+            <option value="temple">🛕 Temple</option>
+            <option value="synagogue">🕍 Synagogue</option>
+          </optgroup>
+          <optgroup label="── Government">
+            <option value="police station">👮 Police</option>
+            <option value="fire station">🚒 Fire Station</option>
+            <option value="post office">📮 Post Office</option>
+            <option value="embassy">🏛️ Embassy</option>
+          </optgroup>
+          <optgroup label="── Technology">
+            <option value="coworking space">💻 Coworking</option>
+            <option value="software company">🖥️ IT Company</option>
+          </optgroup>
+          <option value="__custom__">✏️ Custom keyword…</option>
+        </select>
+      </div>
+      <div class="field" id="customRow" style="display:none">
+        <input type="text" id="customCat" placeholder="e.g. real estate, dentist…">
+      </div>
+    </div>
+
+    <!-- Location -->
+    <div class="field">
+      <label>LOCATION / AREA</label>
+      <input type="text" id="location" placeholder="e.g. Dhaka, Bangladesh">
+    </div>
+
+    <!-- Radius -->
+    <div class="field">
+      <label>SEARCH RADIUS</label>
+      <div class="range-row">
+        <input type="range" id="radius" min="1" max="50" value="5">
+        <span class="range-val" id="radiusVal">5 km</span>
+      </div>
+    </div>
+
+    <!-- Max results -->
+    <div class="field">
+      <label>MAX RESULTS</label>
+      <select id="maxResults">
+        <option value="20">20 results</option>
+        <option value="50" selected>50 results</option>
+        <option value="100">100 results</option>
+        <option value="200">200 results</option>
+        <option value="500">500 results</option>
+        <option value="0">Unlimited</option>
+      </select>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="btn-row">
+      <button class="btn btn-primary" id="startBtn">▶ Start</button>
+      <button class="btn btn-danger" id="stopBtn" style="display:none">■ Stop</button>
+    </div>
+    <button class="btn btn-sec" id="openMapsBtn" style="margin-top:-4px">🗺️ Open Google Maps</button>
+
+    <div class="divider"></div>
+
+    <!-- Enrich -->
+    <div>
+      <div class="sec-label">Post-Processing</div>
+      <button class="btn btn-enrich" id="enrichBtn">🔍 Find Emails &amp; Phones</button>
+      <div id="enrichStatus" style="font-size:11px;color:var(--mut);margin-top:6px;font-family:monospace;display:none"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Clear -->
+    <button class="btn btn-sec" id="clearBtn">🗑️ Clear All Data</button>
+
+  </div><!-- /sidebar -->
+
+  <!-- RIGHT: CONTENT -->
+  <div class="content">
+    <div class="content-top">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="stTotal">0</div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-num" id="stPhone">0</div><div class="stat-label">Phones</div></div>
+        <div class="stat-card"><div class="stat-num" id="stEmail">0</div><div class="stat-label">Emails</div></div>
+        <div class="stat-card"><div class="stat-num" id="stSite">0</div><div class="stat-label">Websites</div></div>
+      </div>
+    </div>
+
+    <div class="table-wrap" id="tableWrap">
+      <div class="empty"><div class="bi">📭</div><p>No data yet. Start scraping from the controls panel.</p></div>
+    </div>
+
+    <div class="export-row">
+      <button class="exp-btn" data-fmt="csv">⬇️ CSV</button>
+      <button class="exp-btn" data-fmt="json">⬇️ JSON</button>
+      <button class="exp-btn" data-fmt="excel">⬇️ Excel</button>
+      <button class="exp-btn" data-fmt="txt">⬇️ TXT</button>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let ws = null;
+let data = [];
+let extConnected = false;
+
+// ── WebSocket ──────────────────────────────────────────────────────────────────
+async function connectWS() {
+  let token = sessionStorage.getItem('wsToken');
+  if (!token) {
+    const r = await fetch('/api/wstoken');
+    const j = await r.json();
+    if (!j.token) { location.href = '/login.html'; return; }
+    token = j.token;
+  }
+  sessionStorage.removeItem('wsToken');
+
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}?type=dashboard&token=${token}`);
+
+  ws.onopen = () => console.log('[Portal] WS connected');
+
+  ws.onmessage = ({ data: raw }) => {
+    const msg = JSON.parse(raw);
+    switch (msg.type) {
+      case 'init':
+        updateState(msg.state);
+        setExtStatus(msg.state.extConnected);
+        data = [];
+        if (msg.dataCount > 0) fetchData();
+        break;
+      case 'ext_status':
+        setExtStatus(msg.connected);
+        break;
+      case 'data':
+        data = msg.records;
+        renderTable();
+        updateStats();
+        break;
+      case 'status':
+        if (msg.msg      !== undefined) setStatus(msg.scraping ? 'run' : 'done', msg.msg);
+        if (msg.scraping !== undefined) setScrapeUI(msg.scraping);
+        if (msg.enriching!== undefined) setEnrichUI(msg.enriching, msg.msg);
+        break;
+      case 'enrich_progress':
+        document.getElementById('enrichStatus').textContent =
+          `${msg.done}/${msg.total} — ${msg.name} (+${msg.found})`;
+        setProgress(Math.round(msg.done / msg.total * 100));
+        break;
+      case 'error':
+        toast(msg.msg, 'bad');
+        break;
+    }
+  };
+
+  ws.onclose = () => {
+    setTimeout(connectWS, 3000);
+  };
+}
+
+function send(obj) {
+  if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+}
+
+// ── Data fetch ─────────────────────────────────────────────────────────────────
+async function fetchData() {
+  const r = await fetch('/api/data');
+  data = await r.json();
+  renderTable();
+  updateStats();
+}
+
+// ── UI helpers ─────────────────────────────────────────────────────────────────
+function setExtStatus(on) {
+  extConnected = on;
+  document.getElementById('extDot').className = 'ext-dot' + (on ? ' on' : '');
+  document.getElementById('extLabel').textContent = on ? 'Extension connected' : 'Extension offline';
+}
+
+function updateState(s) {
+  setStatus(s.scraping ? 'run' : 'done', s.msg);
+  setScrapeUI(s.scraping);
+  document.getElementById('cTag').textContent = s.count || 0;
+  setProgress(s.scraping ? Math.min(15 + (s.count || 0) * 0.5, 90) : 0);
+}
+
+function setStatus(type, msg) {
+  const dot = document.getElementById('sDot');
+  dot.className = 'sdot' + (type ? ' ' + type : '');
+  document.getElementById('sText').textContent = msg;
+}
+
+function setProgress(pct) {
+  document.getElementById('progBar').style.width = pct + '%';
+}
+
+function setScrapeUI(on) {
+  document.getElementById('startBtn').style.display = on ? 'none' : 'flex';
+  document.getElementById('stopBtn').style.display  = on ? 'flex' : 'none';
+}
+
+function setEnrichUI(on, msg) {
+  const el = document.getElementById('enrichStatus');
+  el.style.display = on ? 'block' : 'none';
+  if (msg) el.textContent = msg;
+  document.getElementById('enrichBtn').disabled = on;
+}
+
+function updateStats() {
+  document.getElementById('stTotal').textContent = data.length;
+  document.getElementById('stPhone').textContent = data.filter(r => r.phone).length;
+  document.getElementById('stEmail').textContent = data.filter(r => r.email).length;
+  document.getElementById('stSite').textContent  = data.filter(r => r.website).length;
+  document.getElementById('cTag').textContent = data.length;
+}
+
+function renderTable() {
+  const wrap = document.getElementById('tableWrap');
+  if (!data.length) {
+    wrap.innerHTML = '<div class="empty"><div class="bi">📭</div><p>No data yet.</p></div>';
+    return;
+  }
+  let html = `<table><thead><tr>
+    <th>#</th><th>Name</th><th>Phone</th><th>Email</th><th>City</th><th>⭐</th><th>Website</th>
+  </tr></thead><tbody>`;
+  data.forEach((r, i) => {
+    const site = r.website ? `<a href="${r.website}" target="_blank" style="color:var(--acc)">${new URL(r.website).hostname}</a>` : '—';
+    html += `<tr>
+      <td>${i+1}</td>
+      <td title="${r.name||''}">${r.name||'—'}</td>
+      <td>${r.phone||'—'}</td>
+      <td style="color:${r.email?'var(--grn)':'inherit'}">${r.email||'—'}</td>
+      <td>${r.city||r.country||'—'}</td>
+      <td>${r.rating||'—'}</td>
+      <td>${site}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+// ── Controls ───────────────────────────────────────────────────────────────────
+function getConfig() {
+  const catSel = document.getElementById('catSelect').value;
+  const cat = catSel === '__custom__'
+    ? document.getElementById('customCat').value.trim()
+    : catSel;
+  return {
+    cat,
+    location:   document.getElementById('location').value.trim(),
+    radius:     document.getElementById('radius').value,
+    maxResults: document.getElementById('maxResults').value
+  };
+}
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  const cfg = getConfig();
+  if (!cfg.cat) { toast('Please select a category', 'bad'); return; }
+  send({ type: 'start_scrape', config: cfg });
+  setScrapeUI(true);
+  setStatus('run', 'Starting scraper…');
+});
+
+document.getElementById('stopBtn').addEventListener('click', () => {
+  send({ type: 'stop_scrape' });
+  setScrapeUI(false);
+  setStatus('done', 'Stopping…');
+});
+
+document.getElementById('openMapsBtn').addEventListener('click', () => {
+  const cfg = getConfig();
+  if (!cfg.cat) { toast('Select a category first', 'bad'); return; }
+  send({ type: 'open_maps', config: cfg });
+});
+
+document.getElementById('enrichBtn').addEventListener('click', () => {
+  if (!data.filter(r => r.website).length) { toast('No records with websites', 'bad'); return; }
+  send({ type: 'start_enrich' });
+  setEnrichUI(true, 'Starting enrichment…');
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  if (!confirm('Clear all scraped data?')) return;
+  send({ type: 'clear_data' });
+  data = [];
+  renderTable();
+  updateStats();
+  setProgress(0);
+  setStatus('', 'Ready');
+});
+
+// Category search filter
+document.getElementById('catSearch').addEventListener('input', function() {
+  const q = this.value.toLowerCase();
+  for (const opt of document.getElementById('catSelect').options) {
+    opt.style.display = (!q || opt.text.toLowerCase().includes(q) || opt.value.toLowerCase().includes(q)) ? '' : 'none';
+  }
+});
+
+document.getElementById('catSelect').addEventListener('change', function() {
+  document.getElementById('customRow').style.display = this.value === '__custom__' ? 'block' : 'none';
+});
+
+document.getElementById('radius').addEventListener('input', function() {
+  document.getElementById('radiusVal').textContent = this.value + ' km';
+});
+
+// ── Export ─────────────────────────────────────────────────────────────────────
+const LABELS = {name:'Business Name',category:'Category',phone:'Phone',email:'Email',website:'Website',
+  address:'Address',city:'City',state:'State',country:'Country',zip:'ZIP',lat:'Latitude',lng:'Longitude',
+  rating:'Rating',reviews:'Reviews',hours:'Hours',plus_code:'Plus Code',scraped_at:'Scraped At'};
+const FIELDS = Object.keys(LABELS);
+
+document.querySelectorAll('.exp-btn').forEach(btn => {
+  btn.addEventListener('click', () => exportData(btn.dataset.fmt));
+});
+
+function exportData(fmt) {
+  if (!data.length) { toast('No data to export', 'bad'); return; }
+  let content, mime, ext;
+  if (fmt === 'csv') {
+    const hdr = FIELDS.map(f => LABELS[f]).join(',');
+    const rows = data.map(r => FIELDS.map(f => `"${(r[f]||'').toString().replace(/"/g,'""')}"`).join(','));
+    content = [hdr, ...rows].join('\n'); mime = 'text/csv'; ext = 'csv';
+  } else if (fmt === 'json') {
+    content = JSON.stringify(data.map(r => {const o={};FIELDS.forEach(f=>o[LABELS[f]]=r[f]||'');return o;}), null, 2);
+    mime = 'application/json'; ext = 'json';
+  } else if (fmt === 'excel') {
+    const hdr = FIELDS.map(f => LABELS[f]).join('\t');
+    const rows = data.map(r => FIELDS.map(f => (r[f]||'').toString()).join('\t'));
+    content = [hdr,...rows].join('\n'); mime = 'text/tab-separated-values'; ext = 'xls';
+  } else {
+    const lines = data.map((r,i)=>`[${i+1}] `+FIELDS.map(f=>`${LABELS[f]}: ${r[f]||'N/A'}`).join(' | '));
+    content = lines.join('\n'); mime = 'text/plain'; ext = 'txt';
+  }
+  const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type: mime}));
+  a.download = `gmapscraper_${ts}.${ext}`;
+  a.click();
+  toast(`Exported ${data.length} records as ${ext.toUpperCase()}`, 'ok');
+}
+
+// ── Logout ─────────────────────────────────────────────────────────────────────
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/logout', { method: 'POST' });
+  location.href = '/login.html';
+});
+
+// ── Toast ──────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ── Boot ───────────────────────────────────────────────────────────────────────
+connectWS();
+</script>
+</body>
+</html>
