@@ -56,7 +56,7 @@ Includes a real-time **Web Control Portal** — scrape, enrich, and export witho
 </td>
 <td width="50%">
 
-<img src="https://raw.githubusercontent.com/gitkhayrol/gmapscraper/refs/heads/main/exm_image/imag4.png" width="100%" alt="Web Control Portal" />
+<img src="https://raw.githubusercontent.com/gitkhayrol/gmapscraper/refs/heads/main/exm_image/image4.png" width="100%" alt="Web Control Portal" />
 
 **Web Control Portal**
 
